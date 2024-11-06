@@ -1,7 +1,7 @@
 # Project Plan
 
 ## Title
-Water Quality Analysis in Local Water Bodies
+Water Quality Analysis in Local Water Bodies accross U.S
 
 ## Main Question
 What are the key factors influencing water quality in local water bodies, and how do they vary across different locations and seasons?

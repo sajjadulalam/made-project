@@ -16,7 +16,7 @@ This project will analyze a dataset of water quality collected from various wate
 -**Data Type:** CSV<br />
 This dataset includes water quality measures for various locations, providing information on key indicators like pH, dissolved oxygen, salinity, and more.
 
-### Datasource 2: The Home of the U.S. Government's Open Data
+### Datasource 2: Data from the National Aquatic Resource Surveys
 -**Metadata URL:** https://www.epa.gov/system/files/other-files/2024-08/nla2022_condition_estimates_metadata_0.txt<br />
 -**Data URL:** [[Download CSV Dataset](https://ecos.fws.gov/ServCat/DownloadFile/173741?Reference=117348)](https://www.epa.gov/system/files/other-files/2024-08/nla22_condition_combined_2024-08-13_0.csv)<br />
 -**Data Type:** CSV<br />

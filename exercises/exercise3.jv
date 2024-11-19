@@ -24,8 +24,8 @@ pipeline CountryDataPipeline {
     write: [
       "Country Code",        // from "ISO3"
       "Economy",             // unchanged
-      "GDP Per Capita (USD)", // updated for clarity
-      "Government Bond Share" // adjusted for readability
+      "GDP Per Capita", // updated for clarity
+      "Bond Issuance Share" // adjusted for readability
     ];
   }
 

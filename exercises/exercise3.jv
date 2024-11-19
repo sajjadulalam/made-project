@@ -1,89 +1,108 @@
 pipeline CountryDataPipeline {
 
-  // Step 1: Download the Excel file from a given URL
-  block DownloadExcel oftype HttpExtractor {
+  // Step 1: Download the Excel file for bonds
+  block DownloadExcelForBond oftype HttpExtractor {
     url: "https://thedocs.worldbank.org/en/doc/7d852628d96b9411d43e5d36d5dff941-0050062022/original/Graphs-Chapter-5-02082022.xlsx";
   }
 
-  // Step 2: Interpret the downloaded Excel file
-  block ParseExcelFile oftype XLSXInterpreter {}
+  // Step 1 (Duplicate): Download the Excel file for GDP
+  block DownloadExcelForGDP oftype HttpExtractor {
+    url: "https://thedocs.worldbank.org/en/doc/7d852628d96b9411d43e5d36d5dff941-0050062022/original/Graphs-Chapter-5-02082022.xlsx";
+  }
 
-  // Step 3: Select the required sheet from the Excel file
-  block SelectSheet oftype SheetPicker {
+  // Step 2: Interpret the downloaded Excel file for bonds
+  block ParseExcelForBond oftype XLSXInterpreter {}
+
+  // Step 2 (Duplicate): Interpret the downloaded Excel file for GDP
+  block ParseExcelForGDP oftype XLSXInterpreter {}
+
+  // Step 3: Select the required sheet for bonds
+  block SelectSheetForBond oftype SheetPicker {
     sheetName: "Figure S5.1.2";
   }
 
-  // Step 4: Focus on the specified range of data
-  block SpecifyDataRange oftype CellRangeSelector {
-    select: range P2:S45;
+  // Step 3 (Duplicate): Select the required sheet for GDP
+  block SelectSheetForGDP oftype SheetPicker {
+    sheetName: "Figure S5.1.2";
   }
 
-  // Step 5: Rename column headers to improve clarity
-  block RenameHeaders oftype CellWriter {
+  // Step 4: Rename column headers for bonds
+  block RenameHeadersForBond oftype CellWriter {
     at: range P2:S2;
     write: [
       "Country Code",        // from "ISO3"
       "Economy",             // unchanged
-      "GDP Per Capita", // updated for clarity
-      "Bond Issuance Share" // adjusted for readability
+      "GDP Per Capita",      // updated for clarity
+      "Bond Issuance Share"  // adjusted for readability
     ];
   }
 
-  // Step 6: Define a type to validate positive GDP values
-  valuetype ValidatePositiveGdp oftype decimal {
-    constraints: [GDPMustBePositive];
+  // Step 4 (Duplicate): Rename column headers for GDP
+  block RenameHeadersForGDP oftype CellWriter {
+    at: range P2:S2;
+    write: [
+      "Country Code",        // from "ISO3"
+      "Economy",             // unchanged
+      "GDP Per Capita",      // updated for clarity
+      "Bond Issuance Share"  // adjusted for readability
+    ];
   }
-  constraint GDPMustBePositive on decimal:
-    value > 0;
 
-  // Step 7: Define a type to check bond issuance share values are within valid bounds
-  valuetype ValidateBondShare oftype decimal {
-    constraints: [BondShareInValidRange];
+  // Step 5: Focus on the specified range of data for bonds
+  block SpecifyDataRangeForBond oftype CellRangeSelector {
+    select: range P2:S45;
   }
-  constraint BondShareInValidRange on decimal:
-    value >= 0 and value <= 1;
 
-  // Step 8: Prepare bond-related data for database storage
+  // Step 5 (Duplicate): Focus on the specified range of data for GDP
+  block SpecifyDataRangeForGDP oftype CellRangeSelector {
+    select: range P2:S45;
+  }
+
+  // Step 6: Prepare bond-related data for database storage
   block PrepareBondData oftype TableInterpreter {
     header: true;
     columns: [
       "Country Code" oftype CountryCodeAlpha3,
-      "Bond Issuance Share" oftype ValidateBondShare
+      "Bond Issuance Share" oftype decimal
     ];
   }
 
-  // Step 9: Prepare GDP-related data for database storage
+  // Step 7: Prepare GDP-related data for database storage
   block PrepareGdpData oftype TableInterpreter {
     header: true;
     columns: [
       "Country Code" oftype CountryCodeAlpha3,
-      "GDP Per Capita" oftype ValidatePositiveGdp
+      "GDP Per Capita" oftype decimal
     ];
   }
 
-  // Step 10: Store bond-related data in a SQLite database
+  // Step 8: Store bond-related data in a SQLite database
   block SaveBondData oftype SQLiteLoader {
     table: "bondIssuance";
     file: "./country-stats.sqlite";
   }
 
-  // Step 11: Store GDP-related data in the SQLite database
+  // Step 9: Store GDP-related data in the SQLite database
   block SaveGdpData oftype SQLiteLoader {
     table: "gdpPerCapita";
     file: "./country-stats.sqlite";
   }
 
   // Define the workflow for processing and storing bond-related data
-  DownloadExcel
-    -> ParseExcelFile
-    -> SelectSheet
-    -> RenameHeaders
-    -> SpecifyDataRange
+  DownloadExcelForBond
+    -> ParseExcelForBond
+    -> SelectSheetForBond
+    -> RenameHeadersForBond
+    -> SpecifyDataRangeForBond
     -> PrepareBondData
     -> SaveBondData;
 
   // Define the workflow for processing and storing GDP-related data
-  SpecifyDataRange
+  DownloadExcelForGDP
+    -> ParseExcelForGDP
+    -> SelectSheetForGDP
+    -> RenameHeadersForGDP
+    -> SpecifyDataRangeForGDP
     -> PrepareGdpData
     -> SaveGdpData;
 }

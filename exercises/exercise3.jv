@@ -48,7 +48,7 @@ pipeline CountryDataPipeline {
     header: true;
     columns: [
       "Country Code" oftype CountryCodeAlpha3,
-      "Government Bond Share" oftype ValidateBondShare
+      "Bond Issuance Share" oftype ValidateBondShare
     ];
   }
 
@@ -57,7 +57,7 @@ pipeline CountryDataPipeline {
     header: true;
     columns: [
       "Country Code" oftype CountryCodeAlpha3,
-      "GDP Per Capita (USD)" oftype ValidatePositiveGdp
+      "GDP Per Capita" oftype ValidatePositiveGdp
     ];
   }
 

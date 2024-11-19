@@ -57,7 +57,7 @@ pipeline CountryDataPipeline {
     header: true;
     columns: [
       "Country Code" oftype CountryCodeAlpha3,
-      "GDP Per Capita (USD)" oftype EnsurePositiveGDP
+      "GDP Per Capita (USD)" oftype ValidatePositiveGdp
     ];
   }
 

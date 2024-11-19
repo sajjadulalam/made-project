@@ -63,13 +63,13 @@ pipeline CountryDataPipeline {
 
   // Step 10: Store bond-related data in a SQLite database
   block SaveBondData oftype SQLiteLoader {
-    table: "bond_data";
+    table: "bondIssuance";
     file: "./country-stats.sqlite";
   }
 
   // Step 11: Store GDP-related data in the SQLite database
   block SaveGdpData oftype SQLiteLoader {
-    table: "gdp_data";
+    table: "gdpPerCapita";
     file: "./country-stats.sqlite";
   }
 

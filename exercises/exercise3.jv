@@ -13,27 +13,27 @@ pipeline CountryDataPipeline {
     sheetName: "Figure S5.1.2";
   }
 
-  // Step 4: Rename column headers to improve clarity
+  // Step 4: Focus on the specified range of data
+  block SpecifyDataRange oftype CellRangeSelector {
+    select: range P2:S45;
+  }
+
+  // Step 5: Rename column headers to improve clarity
   block RenameHeaders oftype CellWriter {
     at: range P2:S2;
     write: [
       "Country Code",        // from "ISO3"
       "Economy",             // unchanged
-      "GDP Per Capita",      // updated for clarity
-      "Bond Issuance Share"  // adjusted for readability
+      "GDP Per Capita", // updated for clarity
+      "Bond Issuance Share" // adjusted for readability
     ];
   }
 
-  // Step 5: Focus on the specified range of data
-  block SpecifyDataRange oftype CellRangeSelector {
-    select: range P3:S45;
-  }
-
   // Step 6: Define a type to validate positive GDP values
-  valuetype ValidatePositiveGdp oftype integer {
+  valuetype ValidatePositiveGdp oftype decimal {
     constraints: [GDPMustBePositive];
   }
-  constraint GDPMustBePositive on integer:
+  constraint GDPMustBePositive on decimal:
     value > 0;
 
   // Step 7: Define a type to check bond issuance share values are within valid bounds
@@ -83,8 +83,7 @@ pipeline CountryDataPipeline {
     -> SaveBondData;
 
   // Define the workflow for processing and storing GDP-related data
-  RenameHeaders
-    -> SpecifyDataRange
+  SpecifyDataRange
     -> PrepareGdpData
     -> SaveGdpData;
 }

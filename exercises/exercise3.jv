@@ -30,7 +30,7 @@ pipeline CountryDataPipeline {
   }
 
   // Step 6: Define a type to validate positive GDP values
-  valuetype EnsurePositiveGDP oftype decimal {
+  valuetype ValidatePositiveGdp oftype decimal {
     constraints: [GDPMustBePositive];
   }
   constraint GDPMustBePositive on decimal:

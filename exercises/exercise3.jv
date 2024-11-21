@@ -34,7 +34,7 @@ pipeline CountryStatsPipeline {
     header: true;
     columns: [
       "Country Code" oftype CountryCodeAlpha3,
-      "Bond Issuance Share" oftype Bond
+      "Bond Issuance Share" oftype ValidBondShare
     ];
   }
 
@@ -43,7 +43,7 @@ pipeline CountryStatsPipeline {
     header: true;
     columns: [
       "Country Code" oftype CountryCodeAlpha3,
-      "GDP Per Capita" oftype GdpInt
+      "GDP Per Capita" oftype ValidGDP
     ];
   }
 
@@ -61,24 +61,24 @@ pipeline CountryStatsPipeline {
 
   // Define constraints for validation
   valuetype CountryCodeAlpha3 oftype text {
-    constraints: [ CountryCodeRange ];
+    constraints: [ValidCountryCode];
   }
 
-  constraint CountryCodeRange on text:
+  constraint ValidCountryCode on text:
     value matches /^[A-Z]{3}$/;
 
-  valuetype GdpInt oftype decimal {
-    constraints: [ GdpIntRange ];
+  valuetype ValidGDP oftype integer {
+    constraints: [PositiveGDP];
   }
 
-  constraint GdpIntRange on decimal:
+  constraint PositiveGDP on integer:
     value > 0;
 
-  valuetype Bond oftype decimal {
-    constraints: [ BondRange ];
+  valuetype ValidBondShare oftype decimal {
+    constraints: [BondShareRange];
   }
 
-  constraint BondRange on decimal:
+  constraint BondShareRange on decimal:
     value >= 0 and value <= 1;
 
   // Define the workflow for processing and storing data

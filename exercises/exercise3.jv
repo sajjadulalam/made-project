@@ -71,7 +71,7 @@ pipeline CountryStatsPipeline {
     constraints: [ GdpRange ];
   }
 
-  constraint GdpRange on integer:
+  constraint GdpRange on decimal:
     value > 0;
 
   valuetype Bond oftype decimal {

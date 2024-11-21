@@ -29,6 +29,28 @@ pipeline CountryStatsPipeline {
     select: range P2:S45;
   }
 
+  // Define constraints for validation
+  valuetype CountryCodeAlpha3 oftype text {
+    constraints: [ CountryCodeRange ];
+  }
+
+  constraint CountryCodeRange on text:
+    value matches /^[A-Z]{3}$/;
+
+  valuetype gdp oftype decimal {
+    constraints: [ GdpRange ];
+  }
+
+  constraint GdpRange on decimal:
+    value > 0;
+
+  valuetype Bond oftype decimal {
+    constraints: [ BondRange ];
+  }
+
+  constraint BondRange on decimal:
+    value >= 0 and value <= 1;
+
   // Step 6: Validate and extract bond-related data
   block PrepareBondData oftype TableInterpreter {
     header: true;
@@ -58,28 +80,6 @@ pipeline CountryStatsPipeline {
     table: "gdpPerCapita";
     file: "./country-stats.sqlite";
   }
-
-  // Define constraints for validation
-  valuetype CountryCodeAlpha3 oftype text {
-    constraints: [ CountryCodeRange ];
-  }
-
-  constraint CountryCodeRange on text:
-    value matches /^[A-Z]{3}$/;
-
-  valuetype gdp oftype decimal {
-    constraints: [ GdpRange ];
-  }
-
-  constraint GdpRange on decimal:
-    value > 0;
-
-  valuetype Bond oftype decimal {
-    constraints: [ BondRange ];
-  }
-
-  constraint BondRange on decimal:
-    value >= 0 and value <= 1;
 
   // Define the workflow for processing and storing data
   DownloadExcel

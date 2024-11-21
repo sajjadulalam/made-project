@@ -67,11 +67,11 @@ pipeline CountryStatsPipeline {
   constraint CountryCodeRange on text:
     value matches /^[A-Z]{3}$/;
 
-  valuetype GdpInt oftype integer {
+  valuetype GdpInt oftype decimal {
     constraints: [ GdpIntRange ];
   }
 
-  constraint GdpIntRange on integer:
+  constraint GdpIntRange on decimal:
     value > 0;
 
   valuetype Bond oftype decimal {

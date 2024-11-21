@@ -1,63 +1,36 @@
-pipeline WorldBankpipeline {
+pipeline CountryStatsPipeline {
 
-  RetrieveExcel
-    -> WBXLSXInterpreter
-    -> WBSheetPicker
-    -> WBColumnrename
-    -> WBDataSelector;
-  
-  WBDataSelector
-    -> BondTable
-    -> BondData;
-    
-  WBDataSelector
-    -> GDPTable
-    -> GdpData;
-
-  block RetrieveExcel oftype HttpExtractor {
+  // Step 1: Download the Excel file
+  block DownloadExcel oftype HttpExtractor {
     url: "https://thedocs.worldbank.org/en/doc/7d852628d96b9411d43e5d36d5dff941-0050062022/original/Graphs-Chapter-5-02082022.xlsx";
   }
 
-  block WBXLSXInterpreter oftype XLSXInterpreter { }
+  // Step 2: Interpret the downloaded Excel file
+  block ParseExcel oftype XLSXInterpreter {}
 
-  block WBSheetPicker oftype SheetPicker {
-   sheetName: "Figure S5.1.2";
+  // Step 3: Select the required sheet
+  block SelectSheet oftype SheetPicker {
+    sheetName: "Figure S5.1.2";
   }
 
-  block WBDataSelector oftype CellRangeSelector {
-    select: range P2:S45;
-  }
-
-  block WBColumnrename oftype CellWriter {
+  // Step 4: Rename column headers
+  block RenameHeaders oftype CellWriter {
     at: range P2:S2;
     write: [
-      "Country Code",
-      "Economy",
-      "GDP per Capita",
-      "Bond Issuance Share"
+      "Country Code",        // from "ISO3"
+      "Economy",             // unchanged
+      "GDP Per Capita",      // updated for clarity
+      "Bond Issuance Share"  // adjusted for readability
     ];
   }
 
-  valuetype CountryCodeAlpha3 oftype text {
-    constraints: [ CountryCodeRange ];
+  // Step 5: Focus on the specified range of data
+  block SpecifyDataRange oftype CellRangeSelector {
+    select: range P2:S45;
   }
 
-  constraint CountryCodeRange on text: value matches /^[A-Z]{3}$/;
-
-  valuetype gdp oftype decimal {
-    constraints: [ gdpRange ];
-  }
-  constraint gdpRange on decimal:
-    value > 0;
-
-  valuetype Bond oftype decimal {
-    constraints: [ BondRange ];
-  }
-  constraint BondRange on decimal:
-    value >= 0 and value <= 1;
-
- 
-  block BondTable oftype TableInterpreter {
+  // Step 6: Validate and extract bond-related data
+  block PrepareBondData oftype TableInterpreter {
     header: true;
     columns: [
       "Country Code" oftype CountryCodeAlpha3,
@@ -65,21 +38,62 @@ pipeline WorldBankpipeline {
     ];
   }
 
-  block GDPTable oftype TableInterpreter {
+  // Step 7: Validate and extract GDP-related data
+  block PrepareGdpData oftype TableInterpreter {
     header: true;
     columns: [
       "Country Code" oftype CountryCodeAlpha3,
-      "GDP per Capita" oftype gdp
+      "GDP Per Capita" oftype gdp
     ];
   }
 
-  block BondData oftype SQLiteLoader {
+  // Step 8: Store bond-related data in the SQLite database
+  block SaveBondData oftype SQLiteLoader {
     table: "bondIssuance";
     file: "./country-stats.sqlite";
   }
 
-  block GdpData oftype SQLiteLoader {
+  // Step 9: Store GDP-related data in the SQLite database
+  block SaveGdpData oftype SQLiteLoader {
     table: "gdpPerCapita";
     file: "./country-stats.sqlite";
   }
+
+  // Define constraints for validation
+  valuetype CountryCodeAlpha3 oftype text {
+    constraints: [ CountryCodeRange ];
+  }
+
+  constraint CountryCodeRange on text:
+    value matches /^[A-Z]{3}$/;
+
+  valuetype gdp oftype decimal {
+    constraints: [ GdpRange ];
+  }
+
+  constraint GdpRange on decimal:
+    value > 0;
+
+  valuetype Bond oftype decimal {
+    constraints: [ BondRange ];
+  }
+
+  constraint BondRange on decimal:
+    value >= 0 and value <= 1;
+
+  // Define the workflow for processing and storing data
+  DownloadExcel
+    -> ParseExcel
+    -> SelectSheet
+    -> RenameHeaders
+    -> SpecifyDataRange;
+
+  // Fork the workflow for bond and GDP data
+  SpecifyDataRange
+    -> PrepareBondData
+    -> SaveBondData;
+
+  SpecifyDataRange
+    -> PrepareGdpData
+    -> SaveGdpData;
 }

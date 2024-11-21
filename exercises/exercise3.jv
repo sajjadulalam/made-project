@@ -43,7 +43,7 @@ pipeline CountryStatsPipeline {
     header: true;
     columns: [
       "Country Code" oftype CountryCodeAlpha3,
-      "GDP Per Capita" oftype GdpInt
+      "GDP Per Capita" oftype gdp
     ];
   }
 
@@ -67,11 +67,11 @@ pipeline CountryStatsPipeline {
   constraint CountryCodeRange on text:
     value matches /^[A-Z]{3}$/;
 
-  valuetype GdpInt oftype integer { // Updated to integer
-    constraints: [ GdpIntRange ];
+  valuetype gdp oftype decimal {
+    constraints: [ GdpRange ];
   }
 
-  constraint GdpIntRange on integer:
+  constraint GdpRange on decimal:
     value > 0;
 
   valuetype Bond oftype decimal {

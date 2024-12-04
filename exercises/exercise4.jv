@@ -1,0 +1,84 @@
+pipeline ProcessTemperatureData {
+
+    // Processing sequence
+    DownloadZip 
+        -> UnzipFile
+        -> LocateCSV
+        -> LoadRawData
+        -> ParseCSV
+        -> RenameHeaders
+        -> ValidateData
+        -> ConvertTemp
+        -> ConvertBatteryTemp
+        -> SaveToSQLite;
+
+    // Step 1: Download the ZIP file
+    block DownloadZip oftype HttpExtractor {
+        url: "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip";
+    }
+
+    // Step 2: Unzip the downloaded file
+    block UnzipFile oftype ArchiveInterpreter {
+        archiveType: "zip";
+    }
+
+    // Step 3: Locate the CSV file
+    block LocateCSV oftype FilePicker {
+        path: "/data.csv";
+    }
+
+    // Step 4: Load raw CSV data as text
+    block LoadRawData oftype TextFileInterpreter {}
+
+    // Step 5: Parse CSV into a structured format
+    block ParseCSV oftype CSVInterpreter {
+        delimiter: ";";
+    }
+
+    // Step 6: Rename column headers from German to English
+    block RenameHeaders oftype CellWriter {
+        at: range A1:J1;
+        write: ["id", "producer", "model", "month", "temperature", 
+                "col6", "col7", "col8", "col9", "battery_temperature"];
+    }
+
+    // Step 7: Validate data types and structure
+    block ValidateData oftype TableInterpreter {
+        header: true;
+        columns: [
+            "id" oftype integer,
+            "producer" oftype text,
+            "model" oftype text,
+            "month" oftype integer,
+            "temperature" oftype decimal,
+            "battery_temperature" oftype decimal
+        ];
+    }
+
+    // Step 8: Convert temperature from Celsius to Fahrenheit
+    transform CelsiusToFahrenheit {
+        from TempCelsius oftype decimal;
+        to TempFahrenheit oftype decimal;
+
+        TempFahrenheit: 32 + ((TempCelsius / 5) * 9);
+    }
+
+    block ConvertTemp oftype TableTransformer {
+        inputColumns: ["temperature"];
+        outputColumn: "temperature";
+        uses: CelsiusToFahrenheit;
+    }
+
+    // Step 9: Convert battery temperature from Celsius to Fahrenheit
+    block ConvertBatteryTemp oftype TableTransformer {
+        inputColumns: ["battery_temperature"];
+        outputColumn: "battery_temperature";
+        uses: CelsiusToFahrenheit;
+    }
+
+    // Step 10: Save to SQLite database
+    block SaveToSQLite oftype SQLiteLoader {
+        table: "temperatures";
+        file: "./temperatures.sqlite";
+    }
+}

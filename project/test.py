@@ -8,8 +8,8 @@ import os
 import unittest
 import pandas as pd
 import sqlite3
-pipeline_path = r"C:\Users\sajja\Downloads"
-sys.path.insert(0, pipeline_path)
+# pipeline_path = r"C:\Users\sajja\Downloads"
+# sys.path.insert(0, pipeline_path)
 
 # Import pipeline functions
 from pipeline import run_pipeline, clean_data, save_to_sqlite

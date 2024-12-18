@@ -1,44 +1,33 @@
-name: Continuous Integration (CI)
+# .github/workflows/project.yml
+name: CI
 
 on:
   push:
     branches:
-      - main  # Trigger on push to the 'main' branch
-  pull_request:
-    branches:
-      - main  # Trigger on pull requests to the 'main' branch
+      - main
 
 jobs:
   test:
-    name: Run Tests for Data Pipeline
-    runs-on: ubuntu-latest  # Use Ubuntu runner for the job
+    runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the Code
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      # Step 2: Set Up Python Environment
-      - name: Set Up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'  # Specify the Python version
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
 
-      # Step 3: Install Python Dependencies
-      - name: Install Python Dependencies
-        run: |
-             python3 -m pip install --upgrade pip
-             python3 -m pip install pandas
-      # Step 4: Install Necessary System Packages
-      - name: Install System Packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y curl bash  # Install required system tools
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas requests pytest
 
-      # Step 5: Make tests.sh Executable
-      - name: Make tests.sh Executable
-        run: chmod +x ./project/tests.sh
+    - name: Run pipeline
+      run: |
+        python3 ./project/pipeline.py
 
-      # Step 6: Run the Tests
-      - name: Run Tests
-        run: ./project/tests.sh
+    - name: Run test
+      run: |
+        python3 ./project/test.py

@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI for Data Pipeline
 
 on:
   push:
@@ -6,24 +6,29 @@ on:
       - main
 
 jobs:
-  test:
+  run-tests:
+    name: Run Unit Tests for Data Pipeline
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # Step 1: Checkout the Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'  # Use the Python version your project requires
+      # Step 2: Set Up Python Environment
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pandas requests
+      # Step 3: Install Dependencies
+      - name: Install Dependencies
+        run: |
+             python3 -m pip install --upgrade pip
+             python3 -m pip install pandas
 
-    - name: Run tests
-      run: |
-        chmod +x ./tests.sh
-        ./tests.sh
+
+      # Step 4: Run Tests
+      - name: Run Unit Tests
+        run: |
+          python3 -m unittest project/test.py

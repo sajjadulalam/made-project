@@ -1,0 +1,74 @@
+pipeline GTFSDataPipeline {
+
+  // Define the pipeline flow
+  DataDownloader
+    -> ArchiveProcessor
+    -> FileSelector
+    -> TextProcessor
+    -> CSVProcessor
+    -> TableProcessor
+    -> SQLiteWriter;
+
+  // Step 1: Download data from the specified URL
+  block DataDownloader oftype HttpExtractor {
+      url: "https://gtfs.rhoenenergie-bus.de/GTFS.zip";
+  }
+
+  // Step 2: Process the downloaded zip archive
+  block ArchiveProcessor oftype ArchiveInterpreter {
+      archiveType: "zip"; // Specify the archive type
+  }
+
+  // Step 3: Select the required file from the archive
+  block FileSelector oftype FilePicker {
+      path: "./stops.txt"; // Pick the stops.txt file
+  }
+
+  // Step 4: Interpret the text file
+  block TextProcessor oftype TextFileInterpreter {
+      encoding: "utf8"; // Interpret text with UTF-8 encoding
+  }
+
+  // Step 5: Parse the CSV content
+  block CSVProcessor oftype CSVInterpreter {
+      delimiter: ","; // Set CSV delimiter
+      enclosing: '"'; // Set enclosing character
+  }
+
+  // Step 6: Define table structure and validate data
+  block TableProcessor oftype TableInterpreter {
+      header: true; // CSV includes a header row
+      columns: [
+          "stop_id" oftype integer, 
+          "stop_name" oftype text, 
+          "stop_lat" oftype GeoCoordinatesType,
+          "stop_lon" oftype GeoCoordinatesType,
+          "zone_id" oftype ZoneIDType
+      ]; // Define column structure
+  }
+
+  // Step 7: Validate and filter geographic coordinates
+  constraint GeoCoordinatesRange oftype RangeConstraint {
+      lowerBound: -90;
+      upperBound: 90;
+      lowerBoundInclusive: true;
+      upperBoundInclusive: true;
+  }
+
+  valuetype GeoCoordinatesType oftype decimal {
+      constraints: [GeoCoordinatesRange]; // Validate geographic coordinates
+  }
+
+  // Step 8: Filter rows where zone_id equals 1925
+  constraint ValidZoneId on integer: value == 1925;
+
+  valuetype ZoneIDType oftype integer {
+      constraints: [ValidZoneId]; // Filter stops with zone_id == 1925
+  }
+
+  // Step 9: Write validated data to an SQLite database
+  block SQLiteWriter oftype SQLiteLoader {
+      table: "stops"; // Specify the table name
+      file: "./gtfs.sqlite"; // Specify the output SQLite file
+  }
+}

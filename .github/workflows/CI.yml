@@ -1,5 +1,4 @@
-# .github/workflows/pipeline.yml
-name: CI
+name: CI for Data Pipeline
 
 on:
   push:
@@ -7,27 +6,29 @@ on:
       - main
 
 jobs:
-  test:
+  run-tests:
+    name: Run Unit Tests for Data Pipeline
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      # Step 1: Checkout the Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
+      # Step 2: Set Up Python Environment
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pandas requests pytest
+      # Step 3: Install Dependencies
+      - name: Install Dependencies
+        run: |
+             python3 -m pip install --upgrade pip
+             python3 -m pip install pandas
 
-    - name: Run pipeline
-      run: |
-        python3 ./project/pipeline.py
 
-    - name: Run test
-      run: |
-        python3 ./project/test.py
+      # Step 4: Run Tests
+      - name: Run Unit Tests
+        run: |
+          python3 -m unittest project/test.py

@@ -6,6 +6,12 @@ This repository contains (a) a data science project that is developed by the stu
 To get started, please follow these steps:
 1. Create your own fork of this repository. Feel free to rename the repository right after creation, before you let the teaching instructors know your repository URL. **Do not rename the repository during the semester**.
 
+## Title
+Water Quality Analysis in Local Water Bodies Across the U.S.
+### Description
+This project investigates key factors influencing water quality in U.S. water bodies, focusing on parameters such as dissolved oxygen, pH, and temperature. Using automated ETL pipelines, seasonal trends and geographic variations are analyzed to provide actionable insights for environmental monitoring and conservation.
+
+
 ## Project Work
 Your data engineering project will run alongside lectures during the semester. We will ask you to regularly submit project work as milestones, so you can reasonably pace your work. All project work submissions **must** be placed in the `project` folder.
 
